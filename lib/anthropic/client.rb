@@ -16,6 +16,10 @@ module Anthropic
       Anthropic::Client.json_post(path: "/complete", parameters: parameters)
     end
 
+    def messages(parameters: {})
+      Anthropic::Client.json_post(path: "/messages", parameters: parameters)
+    end
+
     private
 
     def wrap_prompt(prompt:, prefix: "\n\nHuman: ", suffix: "\n\nAssistant:")
