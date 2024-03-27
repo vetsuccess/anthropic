@@ -1,5 +1,4 @@
-require "faraday"
-require "faraday/multipart"
+require "httparty"
 
 require_relative "anthropic/http"
 require_relative "anthropic/client"

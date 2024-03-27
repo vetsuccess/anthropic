@@ -1,34 +1,37 @@
 module Anthropic
   module HTTP
     def get(path:)
-      to_json(conn.get(uri(path: path)) do |req|
-        req.headers = headers
-      end&.body)
+      HTTParty.get(
+        uri(path: path),
+        headers: headers,
+        timeout: request_timeout
+      )
     end
 
     def json_post(path:, parameters:)
-      to_json(conn.post(uri(path: path)) do |req|
-        if parameters[:stream].is_a?(Proc)
-          req.options.on_data = to_json_stream(user_proc: parameters[:stream])
-          parameters[:stream] = true # Necessary to tell Anthropic to stream.
-        end
-
-        req.headers = headers
-        req.body = parameters.to_json
-      end&.body)
+      HTTParty.post(
+        uri(path: path),
+        headers: headers,
+        body: parameters&.to_json,
+        timeout: request_timeout
+      )
     end
 
     def multipart_post(path:, parameters: nil)
-      to_json(conn(multipart: true).post(uri(path: path)) do |req|
-        req.headers = headers.merge({ "Content-Type" => "multipart/form-data" })
-        req.body = multipart_parameters(parameters)
-      end&.body)
+      HTTParty.post(
+        uri(path: path),
+        headers: headers.merge({ "Content-Type" => "multipart/form-data" }),
+        body: parameters,
+        timeout: request_timeout
+      )
     end
 
     def delete(path:)
-      to_json(conn.delete(uri(path: path)) do |req|
-        req.headers = headers
-      end&.body)
+      HTTParty.delete(
+        uri(path: path),
+        headers: headers,
+        timeout: request_timeout
+      )
     end
 
     private
@@ -60,12 +63,12 @@ module Anthropic
       end
     end
 
-    def conn(multipart: false)
-      Faraday.new do |f|
-        f.options[:timeout] = Anthropic.configuration.request_timeout
-        f.request(:multipart) if multipart
-      end
-    end
+    # def conn(multipart: false)
+    #   Faraday.new do |f|
+    #     f.options[:timeout] = Anthropic.configuration.request_timeout
+    #     f.request(:multipart) if multipart
+    #   end
+    # end
 
     def uri(path:)
       Anthropic.configuration.uri_base + Anthropic.configuration.api_version + path
@@ -79,15 +82,15 @@ module Anthropic
       }.merge(Anthropic.configuration.extra_headers)
     end
 
-    def multipart_parameters(parameters)
-      parameters&.transform_values do |value|
-        next value unless value.is_a?(File)
-
-        # Doesn't seem like Anthropic needs mime_type yet, so not worth
-        # the library to figure this out. Hence the empty string
-        # as the second argument.
-        Faraday::UploadIO.new(value, "", value.path)
-      end
-    end
+    # def multipart_parameters(parameters)
+    #   parameters&.transform_values do |value|
+    #     next value unless value.is_a?(File)
+    #
+    #     # Doesn't seem like Anthropic needs mime_type yet, so not worth
+    #     # the library to figure this out. Hence the empty string
+    #     # as the second argument.
+    #     Faraday::UploadIO.new(value, "", value.path)
+    #   end
+    # end
   end
 end

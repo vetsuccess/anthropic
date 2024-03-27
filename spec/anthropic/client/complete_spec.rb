@@ -7,9 +7,9 @@ RSpec.describe Anthropic::Client do
       let(:response) do
         Anthropic::Client.new.complete(
           parameters: {
-            model: model,
-            max_tokens_to_sample: max_tokens,
-            prompt: prompt
+            model: "claude-2",
+            max_tokens_to_sample: 1024,
+            prompt: "How high is the sky?"
           }
         )
       end
