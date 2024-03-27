@@ -82,6 +82,10 @@ module Anthropic
       }.merge(Anthropic.configuration.extra_headers)
     end
 
+    def request_timeout
+      Anthropic.configuration.request_timeout
+    end
+
     # def multipart_parameters(parameters)
     #   parameters&.transform_values do |value|
     #     next value unless value.is_a?(File)
